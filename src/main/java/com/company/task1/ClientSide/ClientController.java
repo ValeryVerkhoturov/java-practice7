@@ -1,29 +1,63 @@
 package com.company.task1.ClientSide;
 
 import lombok.*;
+import lombok.experimental.NonFinal;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.FileOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
 @Value
+@AllArgsConstructor(access = AccessLevel.NONE)
+@RequiredArgsConstructor
 public class ClientController implements Runnable {
 
     String host;
 
     int port;
 
+    @NonFinal
+    DataInputStream dataInputStream;
+
+    @NonFinal
+    DataOutputStream dataOutputStream;
+
     @SneakyThrows
     @Override
     public void run() {
         @Cleanup Socket client = new Socket(host, port);
-        @Cleanup DataInputStream inputStream = new DataInputStream(client.getInputStream());
-        @Cleanup DataOutputStream outputStream = new DataOutputStream(client.getOutputStream());
+        dataInputStream = new DataInputStream(client.getInputStream());
+        dataOutputStream = new DataOutputStream(client.getOutputStream());
+
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            outputStream.writeUTF(scanner.nextLine());
-            System.out.println(inputStream.readUTF());
+            final String message = dataInputStream.readUTF();
+            System.out.println(message);
+            if (message.equals("Передача файла..."))
+                readFile();
+            else if (message.equals("Сессия завершена."))
+                break;
+
+            dataOutputStream.writeUTF(scanner.nextLine());
         }
+
+        closeStreams();
+        client.close();
+    }
+
+    @SneakyThrows
+    private void readFile() {
+        @Cleanup FileOutputStream fileOutputStream = new FileOutputStream("src/main/java/com/company/task1/ClientSide/file.txt");
+        fileOutputStream.write(dataInputStream.readNBytes(dataInputStream.readInt()));
+        fileOutputStream.flush();
+        System.out.println(dataInputStream.readUTF());
+    }
+
+    @SneakyThrows
+    private void closeStreams() {
+        dataInputStream.close();
+        dataOutputStream.close();
     }
 }
