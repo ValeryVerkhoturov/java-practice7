@@ -25,10 +25,11 @@ public class ClientController implements Runnable {
     DataOutputStream dataOutputStream;
 
     /**
-     * Contract:<br>
-     * "0" : String - message from server "Сессия завершена." : String and close session on server;<br>
-     * wrong password : String - message from server "Неправильный пароль." : String<br>
-     * correct password : String - messages from server:<br>
+     * Contract with server:<br>
+     * connect to server - message from server "Вы подключились к серверу \"1 + 1 =\". 0 - Выход. Введите пароль."
+     * send "0" : String - message from server "Сессия завершена." : String and close session on server;<br>
+     * send wrong password : String - message from server "Неправильный пароль." : String<br>
+     * send correct password : String - messages from server:<br>
      *      "Передача файла..." : String<br>
      *      fileBytes.length : int<br>
      *      fileBytes : byte[]<br>
@@ -54,7 +55,6 @@ public class ClientController implements Runnable {
         }
 
         closeStreams();
-        client.close();
     }
 
     @SneakyThrows
