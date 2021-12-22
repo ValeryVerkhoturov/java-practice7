@@ -1,3 +1,3 @@
-package com.company.task1.ServerSide;
+package com.company;
 
 public class WrongPasswordException extends RuntimeException {}

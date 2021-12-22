@@ -1,4 +1,4 @@
-package com.company.task1.ServerSide;
+package com.company;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

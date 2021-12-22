@@ -1,12 +1,12 @@
-package com.company.task1.ClientSide;
+package com.company;
 
 import lombok.*;
 import lombok.experimental.NonFinal;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
+import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
+import java.util.Properties;
 import java.util.Scanner;
 
 @Value
@@ -24,6 +24,14 @@ public class ClientController implements Runnable {
     @NonFinal
     DataOutputStream dataOutputStream;
 
+    public static void main(String[] args) throws IOException {
+        @Cleanup FileReader fileReader = new FileReader("src/task1/resources/task1.properties");
+        Properties properties = new Properties();
+        properties.load(fileReader);
+
+        new ClientController(properties.getProperty("hostname"), Integer.parseInt(properties.getProperty("port"))).run();
+    }
+
     /**
      * Contract with server:<br>
      * connect to server - message from server "Вы подключились к серверу \"1 + 1 =\". 0 - Выход. Введите пароль."
@@ -38,28 +46,31 @@ public class ClientController implements Runnable {
     @SneakyThrows
     @Override
     public void run() {
-        @Cleanup Socket client = new Socket(host, port);
-        dataInputStream = new DataInputStream(client.getInputStream());
-        dataOutputStream = new DataOutputStream(client.getOutputStream());
+        try {
+            @Cleanup Socket client = new Socket(host, port);
+            dataInputStream = new DataInputStream(client.getInputStream());
+            dataOutputStream = new DataOutputStream(client.getOutputStream());
 
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            final String message = dataInputStream.readUTF();
-            System.out.println(message);
-            if (message.equals("Передача файла..."))
-                readFile();
-            else if (message.equals("Сессия завершена."))
-                break;
+            Scanner scanner = new Scanner(System.in);
+            while (true) {
+                final String message = dataInputStream.readUTF();
+                System.out.println(message);
+                if (message.equals("Передача файла..."))
+                    readFile();
+                else if (message.equals("Сессия завершена."))
+                    break;
 
-            dataOutputStream.writeUTF(scanner.nextLine());
+                dataOutputStream.writeUTF(scanner.nextLine());
+            }
+            closeStreams();
+        } catch (ConnectException e) {
+            System.out.println("Не запущен сервер");
         }
-
-        closeStreams();
     }
 
     @SneakyThrows
     private void readFile() {
-        @Cleanup FileOutputStream fileOutputStream = new FileOutputStream("src/main/java/com/company/task1/ClientSide/file.txt");
+        @Cleanup FileOutputStream fileOutputStream = new FileOutputStream(ClientPaths.FILE);
         fileOutputStream.write(dataInputStream.readNBytes(dataInputStream.readInt()));
         fileOutputStream.flush();
         System.out.println(dataInputStream.readUTF());
