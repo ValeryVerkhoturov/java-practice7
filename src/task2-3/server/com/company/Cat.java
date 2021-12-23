@@ -2,6 +2,7 @@ package com.company;
 
 import lombok.Cleanup;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 import java.io.*;
 import java.time.Duration;
@@ -9,7 +10,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
-@Value
+@Value @NonFinal
 public class Cat {
 
     String name;

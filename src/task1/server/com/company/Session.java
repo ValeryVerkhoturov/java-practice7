@@ -51,7 +51,7 @@ public class Session implements Runnable {
     }
 
     @SneakyThrows
-    private void writeFile() {
+    private synchronized void writeFile() {
         @Cleanup FileInputStream fileInputStream = new FileInputStream(ServerPaths.FILE);
         byte[] data = fileInputStream.readAllBytes();
         dataOutputStream.writeUTF("Передача файла...");

@@ -8,18 +8,15 @@ import lombok.experimental.FieldDefaults;
 import java.io.FileReader;
 import java.net.ServerSocket;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
 
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class Server implements Runnable {
 
     ServerSocket serverSocket;
 
-    List<String> chatHistory = Collections.synchronizedList(new ArrayList<>());
+    ChatHistory chatHistory = new ChatHistory();
 
     List<ServerSession> sessions = new ArrayList<>();
 
@@ -41,7 +38,7 @@ public class Server implements Runnable {
     @Override
     public void run() {
         while (true) {
-            sessions.add(new ServerSession(serverSocket.accept()));
+            sessions.add(new ServerSession(serverSocket.accept(), chatHistory));
         }
     }
 }
