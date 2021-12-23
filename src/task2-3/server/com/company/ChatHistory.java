@@ -1,30 +1,31 @@
 package com.company;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Synchronized;
 import lombok.Value;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Value
 public class ChatHistory {
 
     static final int CHAT_HISTORY_SIZE = 10;
 
-    @Getter(onMethod_ = {@Synchronized})
+    @Getter(value = AccessLevel.NONE)
     List<MessageDTO> chatHistory = new LinkedList<>();
 
-    public synchronized void addMessage(MessageDTO message) {
+    public synchronized ChatHistory addMessage(MessageDTO message) {
         chatHistory.add(message);
+        return this;
     }
 
-    public synchronized List<MessageDTO> getLastMessages(MessageDTO messageDTO) {
+    public synchronized List<MessageDTO> getLastMessages(MessageDTO askMessage) {
         return chatHistory.stream()
                 .filter(message -> message.getRecipient().equals("@all") ||
-                        message.getRecipient().equals(messageDTO.getRecipient()))
-                .filter(message -> !message.getSender().equals(messageDTO.getSender()))
+                        message.getRecipient().equals(askMessage.getSender()))
+                .filter(message -> !message.getSender().equals(askMessage.getSender()))
                 .limit(CHAT_HISTORY_SIZE)
                 .toList();
     }

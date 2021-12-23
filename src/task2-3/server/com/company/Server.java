@@ -7,9 +7,9 @@ import lombok.experimental.FieldDefaults;
 
 import java.io.FileReader;
 import java.net.ServerSocket;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 public class Server implements Runnable {
@@ -18,7 +18,11 @@ public class Server implements Runnable {
 
     ChatHistory chatHistory = new ChatHistory();
 
-    List<ServerSession> sessions = new ArrayList<>();
+    ExecutorService executorService = Executors.newCachedThreadPool(r -> {
+        Thread thread = new Thread(r);
+        thread.setDaemon(true);
+        return thread;
+    });
 
     @SneakyThrows
     public static void main(String[] args) {
@@ -38,7 +42,12 @@ public class Server implements Runnable {
     @Override
     public void run() {
         while (true) {
-            sessions.add(new ServerSession(serverSocket.accept(), chatHistory));
+            executorService.execute(new ServerSession(serverSocket.accept(), chatHistory));
+            System.out.println("Yjdfz ctccbz");
+//            try {
+//                executorService.execute(new ServerSession(serverSocket.accept(), chatHistory));
+//                System.out.println("Yjdfz ctccbz");
+//            } catch (SocketException ignore) {}
         }
     }
 }

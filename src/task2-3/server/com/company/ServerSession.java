@@ -4,54 +4,47 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
+import java.util.concurrent.TimeUnit;
 
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ServerSession implements Runnable {
 
     @NonFinal
     @Getter(onMethod_ = {@Synchronized}) @Setter(onMethod_ = {@Synchronized})
-    String name;
-
-    Socket socket;
+    String name = "Unnamed";
 
     ChatHistory chatHistory;
 
     ObjectInputStream objectInputStream;
     ObjectOutputStream objectOutputStream;
 
-    static int MAX_CATS_PER_SESSION = 10;
-    static int MIN_CATS_PER_SESSION = 5;
-
-    @Getter(onMethod_ = {@Synchronized})
-    List<Cat> cats;
-
     @SneakyThrows
     public ServerSession(Socket socket, ChatHistory chatHistory) {
-        this.socket = socket;
         this.chatHistory = chatHistory;
 
-        objectInputStream = new ObjectInputStream(this.socket.getInputStream());
-        objectOutputStream = new ObjectOutputStream(this.socket.getOutputStream());
-
-        cats = new ArrayList<>(
-                Stream.generate(Cat::newRandomInstance)
-                        .limit(ThreadLocalRandom.current().nextInt(MIN_CATS_PER_SESSION, MAX_CATS_PER_SESSION))
-                        .toList());
+        // Если поменять вызов outputStream и inputStream местами,
+        // программа застрянет в конструкторе ObjectInputStream.
+        // Задокументировано здесь https://docs.oracle.com/javase/6/docs/api/java/io/ObjectInputStream.html#ObjectInputStream%28java.io.InputStream%29
+        objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        System.out.println("hello");
+        objectInputStream = new ObjectInputStream(socket.getInputStream());
+        System.out.println("hello");
     }
 
     @SneakyThrows
     @Override
     public void run() {
-        registration();
+        TimeUnit.SECONDS.sleep(10);
+        objectOutputStream.writeObject(MessageDTO.builder()
+                .message("Добро пожаловать на сервер Шизофрения. Введите имя.")
+                .command(Command.OK)
+                .build());
+        objectOutputStream.flush();
 
         boolean sessionLoop = true;
         while (sessionLoop) {
@@ -59,29 +52,38 @@ public class ServerSession implements Runnable {
             switch (message.getCommand()) {
                 case SET_NAME -> {
                     setName(message.getMessage());
-                    objectOutputStream.writeObject(MessageDTO.builder()
+                    chatHistory.addMessage(MessageDTO.builder()
                             .sender("@server")
                             .recipient(message.getSender())
                             .message("Имя установлено.")
-                            .command(Command.SET_NAME)
+                            .command(Command.OK)
                             .build());
                 }
-                case SEND_CAT -> {
-                    chatHistory.addMessage(message);
-                    objectOutputStream.writeObject(MessageDTO.builder()
+                case SEND_CAT ->
+                    chatHistory
+                            .addMessage(message)
+                            .addMessage(MessageDTO.builder()
+                                    .sender("@server")
+                                    .recipient(message.getSender())
+                                    .message("Кошка брошена в " + message.getRecipient())
+                                    .command(Command.OK)
+                                    .build());
+                case SEND_MESSAGE ->
+                    chatHistory
+                            .addMessage(message)
+                            .addMessage(MessageDTO.builder()
+                                    .sender("@server")
+                                    .recipient(message.getSender())
+                                    .message("Сообщение отправлено")
+                                    .command(Command.OK)
+                                    .build());
+                case CLOSE_SESSION -> {
+                    sessionLoop = false;
+                    chatHistory.addMessage(MessageDTO.builder()
                             .sender("@server")
                             .recipient(message.getSender())
-                            .message("Кошка брошена в " + message.getRecipient())
-                            .command(Command.SEND_CAT)
-                            .build());
-                }
-                case SEND_MESSAGE -> {
-                    chatHistory.addMessage(message);
-                    objectOutputStream.writeObject(MessageDTO.builder()
-                            .sender("@server")
-                            .recipient(message.getSender())
-                            .message("Сообщение отправлено")
-                            .command(Command.SEND_MESSAGE)
+                            .message("Сессия закрыта")
+                            .command(Command.CLOSE_SESSION)
                             .build());
                 }
                 case GET_LAST_MESSAGES ->
@@ -89,34 +91,12 @@ public class ServerSession implements Runnable {
                             .sender("@server")
                             .recipient(message.getSender())
                             .messages(chatHistory.getLastMessages(message))
-                            .command(Command.GET_LAST_MESSAGES)
+                            .command(Command.SEND_LAST_MESSAGES)
                             .build());
-                case CLOSE_SESSION -> {
-                    sessionLoop = false;
-                    objectOutputStream.writeObject(MessageDTO.builder()
-                            .sender("@server")
-                            .recipient(message.getSender())
-                            .message("Сессия закрыта")
-                            .command(Command.CLOSE_SESSION)
-                            .build());
-                }
                 default -> objectOutputStream.writeObject(MessageDTO.builder()
                         .command(Command.ERROR)
                         .build());
             }
-
-
         }
-    }
-
-    @SneakyThrows
-    private void registration() {
-        objectOutputStream.writeObject(MessageDTO.builder()
-                .message("Добро пожаловать на сервер Шизофрения. Введите имя.")
-                .command(Command.SET_NAME)
-                .build());
-        MessageDTO message = (MessageDTO) objectInputStream.readObject();
-        if (message.getCommand() == Command.SEND_CAT)
-            setName(message.getMessage());
     }
 }

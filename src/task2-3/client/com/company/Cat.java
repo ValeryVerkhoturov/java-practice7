@@ -4,14 +4,17 @@ import lombok.Cleanup;
 import lombok.Value;
 import lombok.experimental.NonFinal;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.Serializable;
 import java.time.Duration;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Value @NonFinal
-public class Cat {
+public class Cat implements Serializable {
 
     String name;
 
