@@ -7,6 +7,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.io.FileReader;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -42,12 +43,9 @@ public class Server implements Runnable {
     @Override
     public void run() {
         while (true) {
-            executorService.execute(new ServerSession(serverSocket.accept(), chatHistory));
-            System.out.println("Yjdfz ctccbz");
-//            try {
-//                executorService.execute(new ServerSession(serverSocket.accept(), chatHistory));
-//                System.out.println("Yjdfz ctccbz");
-//            } catch (SocketException ignore) {}
+            try {
+                executorService.execute(new ServerSession(serverSocket.accept(), chatHistory));
+            } catch (SocketException ignore) {}
         }
     }
 }

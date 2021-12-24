@@ -12,7 +12,7 @@ import java.util.List;
 public class MessageDTO implements Serializable {
 
     /**
-     * Non null
+     * Non null<br>
      * Example: "@all", "@server", "nickname"
      */
     @Builder.Default

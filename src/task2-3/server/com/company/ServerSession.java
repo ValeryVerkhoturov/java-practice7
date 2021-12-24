@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.TimeUnit;
 
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -31,9 +32,7 @@ public class ServerSession implements Runnable {
         // программа застрянет в конструкторе ObjectInputStream.
         // Задокументировано здесь https://docs.oracle.com/javase/6/docs/api/java/io/ObjectInputStream.html#ObjectInputStream%28java.io.InputStream%29
         objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
-        System.out.println("hello");
         objectInputStream = new ObjectInputStream(socket.getInputStream());
-        System.out.println("hello");
     }
 
     @SneakyThrows
@@ -48,7 +47,12 @@ public class ServerSession implements Runnable {
 
         boolean sessionLoop = true;
         while (sessionLoop) {
-            final MessageDTO message = (MessageDTO) objectInputStream.readObject();
+            MessageDTO message = null;
+            try {
+                message = (MessageDTO) objectInputStream.readObject();
+            } catch (SocketException e) {
+                break;
+            }
             switch (message.getCommand()) {
                 case SET_NAME -> {
                     setName(message.getMessage());
