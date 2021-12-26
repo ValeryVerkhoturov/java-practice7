@@ -6,17 +6,21 @@ import lombok.experimental.NonFinal;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Properties;
 import java.util.Scanner;
 
 @Value
 @AllArgsConstructor(access = AccessLevel.NONE)
 @RequiredArgsConstructor
-public class ClientController implements Runnable {
+public class ClientController implements Runnable, Closeable {
 
     String host;
 
     int port;
+
+    @NonFinal
+    Socket client;
 
     @NonFinal
     DataInputStream dataInputStream;
@@ -47,7 +51,7 @@ public class ClientController implements Runnable {
     @Override
     public void run() {
         try {
-            @Cleanup Socket client = new Socket(host, port);
+            client = new Socket(host, port);
             dataInputStream = new DataInputStream(client.getInputStream());
             dataOutputStream = new DataOutputStream(client.getOutputStream());
 
@@ -59,10 +63,15 @@ public class ClientController implements Runnable {
                     readFile();
                 else if (message.equals("Сессия завершена."))
                     break;
-
-                dataOutputStream.writeUTF(scanner.nextLine());
+                try {
+                    dataOutputStream.writeUTF(scanner.nextLine());
+                } catch (SocketException e) {
+                    System.out.println("Нет соединения с сервером.");
+                    break;
+                }
             }
-            closeStreams();
+
+            close();
         } catch (ConnectException e) {
             System.out.println("Не запущен сервер");
         }
@@ -77,8 +86,7 @@ public class ClientController implements Runnable {
     }
 
     @SneakyThrows
-    private void closeStreams() {
-        dataInputStream.close();
-        dataOutputStream.close();
+    public void close() {
+        client.close();
     }
 }

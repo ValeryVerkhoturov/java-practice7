@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.Value;
 
+import java.io.Closeable;
 import java.net.ServerSocket;
 import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
@@ -12,7 +13,7 @@ import java.util.concurrent.Executors;
 
 @Value
 @AllArgsConstructor(access = AccessLevel.NONE)
-public class ServerController implements Runnable {
+public class ServerController implements Runnable, Closeable {
 
     ServerSocket serverSocket;
 
@@ -37,9 +38,8 @@ public class ServerController implements Runnable {
     }
 
     @SneakyThrows
-    public void stop() {
+    public void close() {
         executorService.shutdown();
         serverSocket.close();
-        Thread.currentThread().interrupt();
     }
 }

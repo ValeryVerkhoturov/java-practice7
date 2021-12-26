@@ -3,16 +3,13 @@ package com.company;
 import lombok.*;
 import lombok.experimental.NonFinal;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.EOFException;
-import java.io.FileInputStream;
+import java.io.*;
 import java.net.Socket;
 
 @Value
 @AllArgsConstructor(access = AccessLevel.NONE)
 @RequiredArgsConstructor
-public class Session implements Runnable {
+public class Session implements Runnable, Closeable {
 
     Socket client;
 
@@ -47,7 +44,7 @@ public class Session implements Runnable {
                 dataOutputStream.writeUTF("Неправильный пароль.");
             } catch (EOFException ignore) {}
 
-        client.close();
+        close();
     }
 
     @SneakyThrows
@@ -60,5 +57,10 @@ public class Session implements Runnable {
         dataOutputStream.write(data);
 
         dataOutputStream.writeUTF("Файл передан.");
+    }
+
+    @Override
+    public void close() throws IOException {
+        client.close();
     }
 }

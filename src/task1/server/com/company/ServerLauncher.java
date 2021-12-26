@@ -27,6 +27,6 @@ class ServerLauncher {
             System.out.println("Остановить сервер? y/n");
         } while (!scanner.nextLine().equals("y"));
 
-        serverController.stop();
+        serverController.close();
     }
 }
