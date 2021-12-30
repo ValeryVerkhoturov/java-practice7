@@ -7,31 +7,25 @@ import com.company.messaging.messages.Message;
 import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
 @Controller
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class MessagingController {
 
-	String serverName = "Server";
-
-	ChatHistory chatHistory;
+	final String serverName = "Server";
 
 	@Autowired
-	public MessagingController() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
-		context.scan("com.company.messaging.history");
-		context.refresh();
-		chatHistory = context.getBean("chatHistory", ChatHistory.class);
-	}
+	ChatHistory chatHistory;
 
 	@MessageMapping("/hello")
 	@SendTo("/topic/messages")
 	public Message greeting(HelloMessage helloMessage) {
-		return new Message(serverName, helloMessage.getUserName() + " присоединился.");
+		Message message = new Message(serverName, helloMessage.getUserName() + " присоединился.");
+        chatHistory.add(message);
+        return message;
 	}
 
 	@MessageMapping("/message")
@@ -44,6 +38,8 @@ public class MessagingController {
 	@MessageMapping("/cat")
 	@SendTo("/topic/messages")
 	public Message catSending(CatMessage catMessage) {
-		return new Message(serverName, catMessage.getUserName() + "бросил кошку в " + catMessage.getRecipient());
+		Message message = new Message(serverName, catMessage.getUserName() + "бросил кошку в " + catMessage.getRecipient());
+        chatHistory.add(message);
+        return message;
 	}
 }

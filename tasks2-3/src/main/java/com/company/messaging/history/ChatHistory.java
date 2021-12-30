@@ -4,13 +4,15 @@ import com.company.messaging.messages.Message;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 @Component
+@Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChatHistory {
 
