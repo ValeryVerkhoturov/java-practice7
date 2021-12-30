@@ -29,7 +29,7 @@ public class ClientController implements Runnable, Closeable {
     DataOutputStream dataOutputStream;
 
     public static void main(String[] args) throws IOException {
-        @Cleanup FileReader fileReader = new FileReader("src/task1/resources/task1.properties");
+        @Cleanup FileReader fileReader = new FileReader("task1/src/main/resources/task1.properties");
         Properties properties = new Properties();
         properties.load(fileReader);
 

@@ -1,9 +1,0 @@
-<component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="task1Server" type="Application" factoryName="Application">
-    <option name="MAIN_CLASS_NAME" value="com.company.ServerLauncher" />
-    <module name="java-practice7" />
-    <method v="2">
-      <option name="Make" enabled="true" />
-    </method>
-  </configuration>
-</component>

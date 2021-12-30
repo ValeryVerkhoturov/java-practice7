@@ -4,6 +4,6 @@ import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(makeFinal = true, level = AccessLevel.PUBLIC)
-public final class ServerPaths {
-    static String FILE = "src/task1/server/com/company/file.txt";
+public final class ClientPaths {
+    static String FILE = "task1/src/main/client/com/company/file.txt";
 }
