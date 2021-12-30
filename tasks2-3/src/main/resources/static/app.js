@@ -8,10 +8,12 @@ function setConnected(connected) {
     if (connected) {
         $("#conversation").show();
         $("#sendingMessage").show();
+        $("#sendingCat").show()
     }
     else {
         $("#conversation").hide();
         $("#sendingMessage").hide();
+        $("#sendingCat").hide()
     }
     $("#messages").html("");
 }
@@ -30,7 +32,7 @@ function connect() {
         setConnected(true);
         console.log('Connected: ' + frame);
         stompClient.subscribe('/topic/messages',
-                greeting => showMessages(JSON.parse(greeting.body).userName + "> " + JSON.parse(greeting.body).content));
+                message => showMessages(JSON.parse(message.body).userName + "> " + JSON.parse(message.body).content));
     });
     sayHello();
 }
@@ -68,10 +70,22 @@ function sendMessage() {
     messageInput.val('');
 }
 
+function sendCat() {
+    let recipient = $("#catRecipient");
+    if (recipient.val() === '') {
+        return;
+    }
+    stompClient.send("/app/cat", {}, JSON.stringify(
+        {'userName': userName, 'recipient': recipient.val()}));
+    recipient.val('');
+}
+
 $(function () {
     $("form").on('submit', e => e.preventDefault());
-    $( "#connect" ).click(() => connect());
-    $( "#disconnect" ).click(() => disconnect());
-    $( "#sendMessage" ).click(() => sendMessage());
+
+    $("#connect").click(() => connect());
+    $("#disconnect").click(() => disconnect());
+    $("#sendMessage").click(() => sendMessage());
+    $("#sendCat").click(() => sendCat());
 });
 
