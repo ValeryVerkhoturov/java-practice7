@@ -20,7 +20,6 @@ function setConnected(connected) {
 
 function connect() {
     let name = $("#name").val();
-    console.log(name);
     if (name === "") {
         return;
     }
@@ -34,7 +33,7 @@ function connect() {
         stompClient.subscribe('/topic/messages',
                 message => showMessages(JSON.parse(message.body).userName + "> " + JSON.parse(message.body).content));
     });
-    sayHello();
+    loadLastMessagesAndSayHello();
 }
 
 function disconnect() {
@@ -50,13 +49,33 @@ function setName(name) {
     console.log("userName = " + userName);
 }
 
-async function sayHello() {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+async function loadLastMessagesAndSayHello() {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    loadLastMessages();
+    await new Promise(resolve => setTimeout(resolve, 500));
+    sayHello();
+}
+
+function loadLastMessages() {
+    fetch('/lastMessages')
+        .then(response => {
+            if (response.status !== 200) {
+                console.log('Status code of fetch ' + response.status);
+                return;
+            }
+            response.json().then(messages => messages
+                .forEach(message => showMessages(message.userName + '> ' + message.content)));
+        })
+        .catch(error => console.log('Fetch error' + error));
+}
+
+function sayHello() {
     stompClient.send('/app/hello', {}, JSON.stringify(
         {'userName': userName}));
 }
 
 function showMessages(message) {
+    console.log(message);
     $("#messages").append("<tr><td>" + message + "</td></tr>");
 }
 

@@ -12,7 +12,6 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 @Component
-@Scope(value = ConfigurableBeanFactory.SCOPE_SINGLETON)
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ChatHistory {
 

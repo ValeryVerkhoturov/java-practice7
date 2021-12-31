@@ -38,7 +38,7 @@ public class MessagingController {
 	@MessageMapping("/cat")
 	@SendTo("/topic/messages")
 	public Message catSending(CatMessage catMessage) {
-		Message message = new Message(serverName, catMessage.getUserName() + "бросил кошку в " + catMessage.getRecipient());
+		Message message = new Message(serverName, catMessage.getUserName() + " бросил кошку в " + catMessage.getRecipient());
         chatHistory.add(message);
         return message;
 	}
