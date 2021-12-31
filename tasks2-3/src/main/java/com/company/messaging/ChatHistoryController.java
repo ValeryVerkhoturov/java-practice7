@@ -19,7 +19,7 @@ public class ChatHistoryController {
     ChatHistory chatHistory;
 
     @GetMapping("/lastMessages")
-    public List<Message> latMessages() {
+    public List<Message> lastMessages() {
         return new ArrayList<>(chatHistory.getLastMessages());
     }
 }
