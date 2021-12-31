@@ -3,6 +3,7 @@ package com.company.messaging;
 import com.company.messaging.history.ChatHistory;
 import com.company.messaging.messages.Message;
 import lombok.AccessLevel;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +16,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ChatHistoryController {
 
-    @Autowired
+    @Setter(onMethod_ = @Autowired)
     ChatHistory chatHistory;
 
     @GetMapping("/lastMessages")

@@ -5,6 +5,7 @@ import com.company.messaging.messages.CatMessage;
 import com.company.messaging.messages.HelloMessage;
 import com.company.messaging.messages.Message;
 import lombok.AccessLevel;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -17,7 +18,7 @@ public class MessagingController {
 
 	final String serverName = "Server";
 
-	@Autowired
+	@Setter(onMethod_ = @Autowired)
 	ChatHistory chatHistory;
 
 	@MessageMapping("/hello")
